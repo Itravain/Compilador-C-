@@ -5,6 +5,15 @@
 #define NUMMAXFILHOS 3
 #define MAXLEXEME 25
 
+#define MAX_IMMEDIATE 1023
+#define RAM_BASE 0
+#define INSTR_BASE 2048
+#define VIDEO_BASE 6144
+#define HD_BASE 11008
+#define HD_LIM 27391
+
+#define TIMER_BASE 27392
+
 //Estrutura de pilha
 // O nó que armazena o dado
 typedef struct noPilha
@@ -34,7 +43,7 @@ Pilha* criar_pilha();
  */
 void push(Pilha *p, const char *palavra);
 
-/**
+/*
  * @brief Remove o elemento do topo da pilha.
  * @param p Ponteiro para a pilha.
  */
@@ -56,7 +65,7 @@ void free_stack(Pilha *p);
 
 // Árvore de sintaxe abstrata
 typedef enum {statement_k, expression_k, declaration_k} NodeKind;
-typedef enum {if_k, while_k, return_k, break_k, continue_k, expression_statement_k} StatementKind;
+typedef enum {if_k, while_k, return_k, break_k, continue_k, expression_statement_k, asm_k} StatementKind;
 typedef enum {op_k, constant_k, id_k, type_k, arr_k, ativ_k, assign_k, parametro_exp_t} ExpressionKind;
 typedef enum {var_k, fun_k, param_k, param_array_k, array_k, unknown_k} DeclarationKind;
 
@@ -135,7 +144,7 @@ int count_symbol(char* name, char* scope, HashTable* symbol_table);
 void free_table(HashTable* table);
 
 //Código intermediário
-enum operacoes {FUN, ARG, LOAD, EQUAL, GREATER, LESS, IFF, RET, GOTO, LAB, PARAM, DIV, MUL, SUB, CALL, END, STORE, HALT, SUM, ALLOC, ASSIGN};
+enum operacoes {FUN, ARG, LOAD, EQUAL, GREATER, LESS, LEQ, IFF, RET, GOTO, LAB, PARAM, DIV, MUL, SUB, CALL, END, STORE, HALT, SUM, ALLOC, ASSIGN, BRANCH, SINT, SBLR, SAVE_REGS, LOAD_REGS, SAVE_REGS_SO, LOAD_REGS_SO};
 
 typedef struct tacNo{
     enum operacoes operacao;
