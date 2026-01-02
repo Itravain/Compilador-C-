@@ -86,3 +86,12 @@ clean:
 > rm -f $(OUTPUT_DIR)/*
 > rm -f $(BIN_DIR)/*
 > echo "Feito."
+
+# Regra para rodar com Valgrind
+# Uso: make debug INPUT=test_codes/fatorial.c
+debug: all
+> [ -n "$(INPUT)" ] || { echo "ERRO: use make debug INPUT=test_codes/fatorial.c"; exit 1; }
+> mkdir -p $(OUTPUT_DIR)
+> echo "Executando Valgrind em '$(INPUT)'..."
+> valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=$(OUTPUT_DIR)/valgrind-out.txt ./$(TARGET) < "$(INPUT)"
+> echo "Análise do Valgrind concluída. Veja o relatório em $(OUTPUT_DIR)/valgrind-out.txt"

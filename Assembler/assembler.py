@@ -5,7 +5,7 @@ debugar = True
 debugar = False
 
 header = True
-# header = False  
+header = False  
 
 class Assembler:
     import re
@@ -230,10 +230,7 @@ class Assembler:
             # Instrução para salvar o estado dos registradores base e limite
             # Formato: Cond[31:28] 11 100 Rn[19:15] Rm[14:10] 0...0
             elif mnemonic == "SBL":
-                final_binary = ['1110', '11', '100', 
-                                self._get_operand_binary(operands[0]),  # rn
-                                self._get_operand_binary(operands[1]),  # rm
-                                '0'*13]
+                final_binary = ['1110', '11', '100', '0'*23]
             # Formato: Cond[31:28] 11 101 Rn[19:15] Imm[14:12] 0...0
             elif mnemonic == "SIR":
                 final_binary = ['1110', '11', '101', 
