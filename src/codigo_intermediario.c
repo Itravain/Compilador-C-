@@ -19,7 +19,7 @@ const char* get_decl_kind_as_string(DeclarationKind kind) {
 const char *operacoes_nomes[] = {
     "FUN", "ARG", "LOAD", "EQUAL", "GREATER", "LESS", "LEQ", "IFF", "RET", "GOTO", "LAB",
     "PARAM", "DIV", "MUL", "SUB", "CALL", "END", "STORE", "HALT", "SUM", "ALLOC", "ASSIGN",
-    "BRANCH", "SINT", "SBLR", "SAVE_REGS", "LOAD_REGS", "SAVE_REGS_SO", "LOAD_REGS_SO"
+    "BRANCH", "SINT", "SBLR", "SAVE_REGS", "LOAD_REGS", "SAVE_REGS_SO", "LOAD_REGS_SO", "BRANCH_P"
 };
 const int NUM_OPERACOES = sizeof(operacoes_nomes) / sizeof(operacoes_nomes[0]);
 
@@ -451,6 +451,16 @@ char *percorrer_arvore(No *node_tree, Tac **tac_list_ptr, HashTable *symbol_tabl
                         //     fprintf(stderr, "Erro [branch]: Argumentos inválidos na linha %d.\n", node_tree->linha);
                         //     free(hd_pos_reg);
                         // }
+                        
+                        result_str = NULL; // run_program does not return a value
+                        break;
+                    }
+                    if (strcmp(node_tree->lexmema, "branch_preemp") == 0) {
+                        
+                        // Special handling for set_b_l_reg(base, limit)
+                        char *hd_pos_reg = percorrer_arvore(node_tree->filho[0], tac_list_ptr, symbol_table, 0, 0);
+                        
+                        *tac_list_ptr = criarNoTac(*tac_list_ptr, BRANCH_P, "", "", "");
                         
                         result_str = NULL; // run_program does not return a value
                         break;

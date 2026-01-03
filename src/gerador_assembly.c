@@ -74,7 +74,7 @@ void traduzir_tac_para_assembly(FILE *arquivoSaida, TacNo *tac, HashTable *tabel
     const char *op_nomes[] = {
         "FUN", "ARG", "LOAD", "EQUAL", "GREATER", "LESS", "LEQ", "IFF", "RET", "GOTO", "LAB",
         "PARAM", "DIV", "MUL", "SUB", "CALL", "END", "STORE", "HALT", "SUM", "ALLOC", "ASSIGN",
-        "BRANCH", "SINT", "SBLR", "SAVE_REGS", "LOAD_REGS", "SAVE_REGS_SO", "LOAD_REGS_SO"
+        "BRANCH", "SINT", "SBLR", "SAVE_REGS", "LOAD_REGS", "SAVE_REGS_SO", "LOAD_REGS_SO", "BRANCH_P"
     };
     
     char *reg_res = get_reg(tac->resultado);
@@ -359,7 +359,12 @@ void traduzir_tac_para_assembly(FILE *arquivoSaida, TacNo *tac, HashTable *tabel
 
             }
             else if(strcmp(tac->op2, "ClockInterrupt") == 0){
+                fprintf(arquivoSaida, "    SBL\n");
+                
                 emit_addi(arquivoSaida, "Rlink", "Rlink", 1);
+                for (int i = 0; i <= 31; i++) {
+                    fprintf(arquivoSaida, "    STR R%d, [R0, #%d]\n", i, i + 2);
+                }
             }
             else if(strcmp(tac->op2, "PrintInterrupt") == 0){
 
@@ -469,6 +474,12 @@ void traduzir_tac_para_assembly(FILE *arquivoSaida, TacNo *tac, HashTable *tabel
             break;
         }
         case BRANCH: {
+            fprintf(arquivoSaida, "    SBL\n");
+            /*Pular para novo programa*/
+            fprintf(arquivoSaida, "    BI #0\n");
+            break;
+        }
+        case BRANCH_P: {
             /*Setar registradores base*/
             // fprintf(arquivoSaida, "    ; Carregando registradores no HD a partir da posição em %s\n", reg_res); 
             // // 1. Calcula o endereço base no HD e armazena em Rad.
@@ -479,10 +490,12 @@ void traduzir_tac_para_assembly(FILE *arquivoSaida, TacNo *tac, HashTable *tabel
             //     // Gera LDR Ri, [Rad, #i]
             //     fprintf(arquivoSaida, "    LDR R%d, [Rad, #%d]\n", i, i);
             // }
-            /*Talvez dê problema!!!*/
-            // fprintf(arquivoSaida, "    SBL\n");
+            for (int i = 0; i <= 31; i++) {
+                fprintf(arquivoSaida, "    LDR R%d, [R0, #%d]\n", i, i + 2);
+            }
+            fprintf(arquivoSaida, "    SBL\n");
             /*Pular para novo programa*/
-            fprintf(arquivoSaida, "    BI #0\n");
+            fprintf(arquivoSaida, "    B Rlink\n");
             break;
         }
         case SINT: {
