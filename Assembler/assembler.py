@@ -5,7 +5,7 @@ debugar = True
 debugar = False
 
 header = True
-header = False  
+# header = False  
 
 class Assembler:
     import re

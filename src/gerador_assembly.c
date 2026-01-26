@@ -360,8 +360,7 @@ void traduzir_tac_para_assembly(FILE *arquivoSaida, TacNo *tac, HashTable *tabel
             }
             else if(strcmp(tac->op2, "ClockInterrupt") == 0){
                 fprintf(arquivoSaida, "    SBL\n");
-                
-                emit_addi(arquivoSaida, "Rlink", "Rlink", 1);
+            
                 for (int i = 0; i <= 31; i++) {
                     fprintf(arquivoSaida, "    STR R%d, [R0, #%d]\n", i, i + 2);
                 }
@@ -495,7 +494,7 @@ void traduzir_tac_para_assembly(FILE *arquivoSaida, TacNo *tac, HashTable *tabel
             }
             fprintf(arquivoSaida, "    SBL\n");
             /*Pular para novo programa*/
-            fprintf(arquivoSaida, "    B Rlink\n");
+            fprintf(arquivoSaida, "    B RPcInter\n");
             break;
         }
         case SINT: {
