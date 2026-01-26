@@ -492,8 +492,6 @@ void traduzir_tac_para_assembly(FILE *arquivoSaida, TacNo *tac, HashTable *tabel
             for (int i = 0; i <= 31; i++) {
                 fprintf(arquivoSaida, "    LDR R%d, [R0, #%d]\n", i, i + 2);
             }
-            fprintf(arquivoSaida, "    MOV Rout RPcInter\n");
-            fprintf(arquivoSaida, "    OUT\n");
             fprintf(arquivoSaida, "    SBL\n");
             /*Pular para novo programa*/
             fprintf(arquivoSaida, "    B RPcInter\n");
