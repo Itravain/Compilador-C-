@@ -168,6 +168,7 @@ ADDI SP, SP, #N
 - TAC: gerado por [src/codigo_intermediario.c](src/codigo_intermediario.c) e salvo em [outputs/codInterm.txt](outputs/codInterm.txt).
 - Assembly: gerado por [src/gerador_assembly.c](src/gerador_assembly.c).
 - Considerações de registradores/stack para chamadas e recursão.
+- Vetores especiais e memória mapeada: [src/tabSimbolos.c](src/tabSimbolos.c) trata `VIDEO_MEMORY`, `RAM_MEMORY`, `INSTR_MEMORY`, `HD_MEMORY` e `TIMER_CONF` como símbolos especiais, sem alocação normal de array. Na geração de assembly, o endereço final é calculado como base fixa + índice, usando os offsets definidos em [globals.h](globals.h): `RAM_BASE = 0`, `INSTR_BASE = 2048`, `VIDEO_BASE = 6144`, `HD_BASE = 11008` e `TIMER_BASE = 27392`.
 
 <details>
 <summary>Tokens do scanner (resumo)</summary>
