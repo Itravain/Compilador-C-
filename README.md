@@ -18,7 +18,7 @@ Compilador acadêmico para a linguagem C- com pipeline completo: Scanner (Flex),
 - [Pipeline de compilação](#pipeline-de-compilação)
 - [Recursos](#recursos)
 - [Pré-requisitos](#pré-requisitos)
-- [Uso rápido](#uso-rápido)
+- [Como executar](#como-executar)
 - [Comandos do Makefile](#comandos-do-makefile)
 - [Exemplo de compilação](#exemplo-de-compilação)
 - [Estrutura do repositório](#estrutura-do-repositório)
@@ -47,48 +47,59 @@ Este projeto implementa um compilador para C-:
 - Expressões aritméticas e relacionais.
 - TAC (Three-Address Code) com suporte a labels e saltos.
 - Geração de assembly com acesso a pilha/FP/dados globais.
-- Makefile com alvos práticos (compile, clean, tests, distclean).
+- Makefile com alvos práticos para compilar, montar, depurar e limpar.
 
 ---
 
 ## Pré-requisitos
 - Linux, GNU Make
 - gcc, flex, bison, python3
+- valgrind, apenas se você for usar `make debug`
 - Montador Python: [Assembler/assembler.py](Assembler/assembler.py)
 
-Verificar ferramentas:
+Antes de rodar os comandos, esteja na raiz do projeto:
 ```bash
-make check-tools
+cd /home/itravain/Faculdade/labs/Compiladores
 ```
 
 ---
 
-## Uso rápido
-Compile o compilador:
+## Como executar
+O fluxo principal é:
+
+1. Construir o compilador.
 ```bash
 make
 ```
 
-Compile um programa C- e gere o binário em bin/:
+2. Compilar um programa C- de entrada e gerar o assembly intermediário em `outputs/assembly.asm`.
 ```bash
 make compile INPUT=test_codes/fatorial.c
-# Saídas:
-# - outputs/arvore.txt, tabsimb.txt, codInterm.txt
-# - outputs/assembly.asm
-# - bin/fatorial.bin
 ```
 
-Escolher o nome do binário:
+3. Montar um arquivo assembly já existente, se você quiser usar o montador separadamente.
 ```bash
-make compile INPUT=test_codes/_teste_5.c OUTPUT=bin/teste5.bin
+make assemble INPUT_ASM=outputs/assembly.asm
 ```
 
-Limpar:
+4. Executar a versão de depuração com Valgrind.
+```bash
+make debug INPUT=test_codes/fatorial.c
+```
+
+5. Limpar artefatos gerados.
 ```bash
 make clean
-# ou
-make distclean  # limpa também gerados por Flex/Bison e .d
 ```
+
+Saídas típicas da compilação:
+- [outputs/arvore.txt](outputs/arvore.txt)
+- [outputs/tabsimb.txt](outputs/tabsimb.txt)
+- [outputs/codInterm.txt](outputs/codInterm.txt)
+- [outputs/assembly.asm](outputs/assembly.asm)
+- [bin/fatorial.bin](bin/fatorial.bin)
+
+Observação: o compilador lê o programa de entrada pela entrada padrão. O alvo `compile` apenas redireciona o arquivo informado em `INPUT` para o executável `compiler` e depois usa o montador Python para produzir o binário.
 
 ---
 
@@ -96,8 +107,10 @@ make distclean  # limpa também gerados por Flex/Bison e .d
 | Alvo | Descrição |
 |------|-----------|
 | `make` / `make all` | Constrói o compilador (`compiler`). |
-| `make compile INPUT=arquivo.c- [OUTPUT=bin/saida.bin]` | Compila um fonte C-, gera assembly e monta binário. |
-| `make clean` | Remove binário do compilador, objetos e saídas. |
+| `make compile INPUT=arquivo.c [OUTPUT=bin/saida.bin]` | Compila um fonte C-, gera `outputs/assembly.asm` e monta o binário final. |
+| `make assemble INPUT_ASM=arquivo.asm [OUTPUT_BIN=bin/saida.bin]` | Monta um arquivo assembly existente em binário. |
+| `make debug INPUT=arquivo.c` | Executa o compilador com Valgrind e salva o log em `outputs/valgrind-out.txt`. |
+| `make clean` | Remove binário do compilador, objetos e saídas geradas. |
 
 ---
 
@@ -135,6 +148,11 @@ ADDI SP, SP, #N
 ...
 ```
 
+Se quiser montar manualmente o assembly gerado:
+```bash
+make assemble INPUT_ASM=outputs/assembly.asm OUTPUT_BIN=bin/fatorial.bin
+```
+
 ---
 
 ## Estrutura do repositório
@@ -169,6 +187,13 @@ ADDI SP, SP, #N
 - Assembly: gerado por [src/gerador_assembly.c](src/gerador_assembly.c).
 - Considerações de registradores/stack para chamadas e recursão.
 - Vetores especiais e memória mapeada: [src/tabSimbolos.c](src/tabSimbolos.c) trata `VIDEO_MEMORY`, `RAM_MEMORY`, `INSTR_MEMORY`, `HD_MEMORY` e `TIMER_CONF` como símbolos especiais, sem alocação normal de array. Na geração de assembly, o endereço final é calculado como base fixa + índice, usando os offsets definidos em [globals.h](globals.h): `RAM_BASE = 0`, `INSTR_BASE = 2048`, `VIDEO_BASE = 6144`, `HD_BASE = 11008` e `TIMER_BASE = 27392`.
+
+## Dicas e solução de problemas
+- Se `make compile` falhar ao abrir arquivos de saída, verifique se você está executando o comando na raiz do projeto.
+- O diretório `outputs/` é usado para os artefatos intermediários e o diretório `bin/` para o binário final.
+- O montador Python escreve o binário em stdout; por isso o `Makefile` redireciona a saída para o arquivo final.
+- O alvo `make debug` exige `valgrind` instalado no sistema.
+- O projeto aceita arquivos de teste em `test_codes/`, mas qualquer arquivo C- compatível pode ser usado com `make compile INPUT=...`.
 
 <details>
 <summary>Tokens do scanner (resumo)</summary>
