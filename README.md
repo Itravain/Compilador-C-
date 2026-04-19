@@ -5,7 +5,7 @@
 [![Build](https://img.shields.io/badge/build-Makefile-success)](Makefile)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](#license)
 
-Compilador acadêmico para a linguagem C- com pipeline completo: Scanner (Flex), Parser (Bison), AST, Análise Semântica, TAC e Geração de Assembly + binário via montador Python.
+Compilador acadêmico para a linguagem C- com pipeline completo: scanner, parser, AST, análise semântica, TAC, assembly e binário.
 
 <p align="center">
   <i>Tokens → Parser → AST → Semântica → TAC → Assembly → Binário</i>
@@ -31,23 +31,21 @@ Compilador acadêmico para a linguagem C- com pipeline completo: Scanner (Flex),
 ---
 
 ## Visão geral
-Este projeto implementa um compilador para C-:
-- Análise léxica com Flex.
-- Análise sintática com Bison.
-- Geração de AST e Tabela de Símbolos.
-- Análise semântica (tipos, escopos, declarações).
-- Geração de Código Intermediário (TAC).
-- Geração de Assembly e montagem para binário.
+Este projeto implementa um compilador para C- com geração de código intermediário e binário final.
+
+Fluxo principal:
+- Entrada do programa pela stdin.
+- Geração de AST, tabela de símbolos e TAC.
+- Emissão de assembly em [outputs/assembly.asm](outputs/assembly.asm).
+- Montagem do assembly em binário com o montador Python.
 
 ---
 
 ## Recursos
-- Suporte a variáveis globais/locais e parâmetros (incluindo arrays).
-- Controle de fluxo: if/else, while, return.
-- Expressões aritméticas e relacionais.
-- TAC (Three-Address Code) com suporte a labels e saltos.
-- Geração de assembly com acesso a pilha/FP/dados globais.
-- Makefile com alvos práticos para compilar, montar, depurar e limpar.
+- Variáveis globais, locais, parâmetros e arrays.
+- Controle de fluxo com if/else, while e return.
+- Expressões aritméticas, relacionais e chamadas de função.
+- Geração de assembly e binário final.
 
 ---
 
@@ -57,10 +55,7 @@ Este projeto implementa um compilador para C-:
 - valgrind, apenas se você for usar `make debug`
 - Montador Python: [Assembler/assembler.py](Assembler/assembler.py)
 
-Antes de rodar os comandos, esteja na raiz do projeto:
-```bash
-cd /home/itravain/Faculdade/labs/Compiladores
-```
+Execute os comandos na raiz do projeto.
 
 ---
 
@@ -92,14 +87,14 @@ make debug INPUT=test_codes/fatorial.c
 make clean
 ```
 
-Saídas típicas da compilação:
+Saídas típicas:
 - [outputs/arvore.txt](outputs/arvore.txt)
 - [outputs/tabsimb.txt](outputs/tabsimb.txt)
 - [outputs/codInterm.txt](outputs/codInterm.txt)
 - [outputs/assembly.asm](outputs/assembly.asm)
-- [bin/fatorial.bin](bin/fatorial.bin)
+- binário em [bin/](bin/)
 
-Observação: o compilador lê o programa de entrada pela entrada padrão. O alvo `compile` apenas redireciona o arquivo informado em `INPUT` para o executável `compiler` e depois usa o montador Python para produzir o binário.
+Observação: o compilador lê o programa pela entrada padrão. `make compile` só redireciona o arquivo informado em `INPUT` para o executável `compiler` e monta o binário ao final.
 
 ---
 
@@ -115,7 +110,7 @@ Observação: o compilador lê o programa de entrada pela entrada padrão. O alv
 ---
 
 ## Exemplo de compilação
-Fonte de exemplo: [test_codes/fatorial.c](test_codes/fatorial.c)
+Fonte de exemplo: [test_codes/fatorial.c](test_codes/fatorial.c).
 ```c
 int fatorial(int numero){
     if (numero <= 1) return 1;
@@ -135,23 +130,9 @@ make compile INPUT=test_codes/fatorial.c
 ```
 
 Saídas:
-- TAC: [outputs/codInterm.txt](outputs/codInterm.txt)
-- Assembly: [outputs/assembly.asm](outputs/assembly.asm)
-- Binário: bin/fatorial.bin
-
-Trecho do assembly (exemplo):
-```asm
-; início de main
-PUSH FP
-MOV FP, SP
-ADDI SP, SP, #N
-...
-```
-
-Se quiser montar manualmente o assembly gerado:
-```bash
-make assemble INPUT_ASM=outputs/assembly.asm OUTPUT_BIN=bin/fatorial.bin
-```
+- [outputs/codInterm.txt](outputs/codInterm.txt)
+- [outputs/assembly.asm](outputs/assembly.asm)
+- binário em [bin/](bin/)
 
 ---
 
@@ -181,29 +162,16 @@ make assemble INPUT_ASM=outputs/assembly.asm OUTPUT_BIN=bin/fatorial.bin
 ---
 
 ## Detalhes de implementação
-- AST: construída pelo parser ([src/main.c](src/main.c)) e impressa em [outputs/arvore.txt](outputs/arvore.txt).
-- Tabela de símbolos: hash com escopos e offsets ([src/tabSimbolos.c](src/tabSimbolos.c)).
-- TAC: gerado por [src/codigo_intermediario.c](src/codigo_intermediario.c) e salvo em [outputs/codInterm.txt](outputs/codInterm.txt).
-- Assembly: gerado por [src/gerador_assembly.c](src/gerador_assembly.c).
-- Considerações de registradores/stack para chamadas e recursão.
-- Vetores especiais e memória mapeada: [src/tabSimbolos.c](src/tabSimbolos.c) trata `VIDEO_MEMORY`, `RAM_MEMORY`, `INSTR_MEMORY`, `HD_MEMORY` e `TIMER_CONF` como símbolos especiais, sem alocação normal de array. Na geração de assembly, o endereço final é calculado como base fixa + índice, usando os offsets definidos em [globals.h](globals.h): `RAM_BASE = 0`, `INSTR_BASE = 2048`, `VIDEO_BASE = 6144`, `HD_BASE = 11008` e `TIMER_BASE = 27392`.
+- AST, tabela de símbolos e TAC são gerados no pipeline principal do compilador.
+- O assembly final é produzido por [src/gerador_assembly.c](src/gerador_assembly.c).
+- Vetores especiais (`VIDEO_MEMORY`, `RAM_MEMORY`, `INSTR_MEMORY`, `HD_MEMORY` e `TIMER_CONF`) são tratados como memória mapeada, com endereços base definidos em [globals.h](globals.h).
 
 ## Dicas e solução de problemas
-- Se `make compile` falhar ao abrir arquivos de saída, verifique se você está executando o comando na raiz do projeto.
-- O diretório `outputs/` é usado para os artefatos intermediários e o diretório `bin/` para o binário final.
-- O montador Python escreve o binário em stdout; por isso o `Makefile` redireciona a saída para o arquivo final.
-- O alvo `make debug` exige `valgrind` instalado no sistema.
-- O projeto aceita arquivos de teste em `test_codes/`, mas qualquer arquivo C- compatível pode ser usado com `make compile INPUT=...`.
-
-<details>
-<summary>Tokens do scanner (resumo)</summary>
-
-| Categoria | Exemplos |
-|---|---|
-| Palavras-chave | `if`, `else`, `while`, `int`, `void`, `return` |
-| Operadores | `+ - * / % && || ! != == = >= <= > <` |
-| Símbolos | `{ } ( ) [ ] ; , .` |
-</details>
+- Se `make compile` falhar ao abrir arquivos de saída, verifique se está na raiz do projeto.
+- `outputs/` guarda os artefatos intermediários e `bin/` guarda o binário final.
+- O montador Python escreve o binário em stdout; o `Makefile` faz o redirecionamento.
+- `make debug` exige `valgrind` instalado.
+- Arquivos de teste em `test_codes/` funcionam, mas qualquer fonte C- compatível pode ser usado.
 
 ---
 
